@@ -30,9 +30,9 @@ class FireworksRocket extends Entity{
 	 * FireworksRocket constructor.
 	 * @param Level $level
 	 * @param CompoundTag $nbt
-	 * @param Firework $fireworkItem
+	 * @param null|Firework $fireworkItem
 	 */
-	public function __construct(Level $level, CompoundTag $nbt, Firework $fireworkItem){
+	public function __construct(Level $level, CompoundTag $nbt, ?Firework $fireworkItem = null){
 		parent::__construct($level, $nbt);
 		if ($fireworkItem !== null && $fireworkItem->getNamedTagEntry("Fireworks") instanceof CompoundTag) {
 			$this->propertyManager->setCompoundTag(self::DATA_FIREWORK_ITEM, $fireworkItem->getNamedTag());

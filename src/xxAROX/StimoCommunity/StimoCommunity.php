@@ -6,6 +6,7 @@ use pocketmine\item\ItemFactory;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\Config;
 use pocketmine\utils\Utils;
+use xxAROX\StimoCommunity\command\SetupCommand;
 use xxAROX\StimoCommunity\entity\FireworksRocket;
 use xxAROX\StimoCommunity\item\Firework;
 use xxAROX\StimoCommunity\stage\Stage;
@@ -19,6 +20,8 @@ use xxAROX\StimoCommunity\stage\Stage;
  * @project StimoCommunity
  */
 class StimoCommunity extends PluginBase{
+	const PREFIX = "§dCommunity §8» §7";
+
 	/** @var StimoCommunity */
 	private static $instance;
 	private static $stage;
@@ -37,6 +40,9 @@ class StimoCommunity extends PluginBase{
 	 */
 	public function onEnable(){
 		$this->getServer()->getPluginManager()->registerEvents(new Listener, $this);
+		$this->getServer()->getCommandMap()->registerAll($this->getName(), [
+			new SetupCommand("setup"),
+		]);
 		$this->registerItems();
 		$this->registerEntities();
 		self::$stage = new Stage((Utils::getOS() == Utils::OS_LINUX ? "/home/.data/stage.json" : StimoCommunity::getInstance()->getDataFolder() . "stage.json"));

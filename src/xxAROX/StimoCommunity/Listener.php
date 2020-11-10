@@ -1,6 +1,7 @@
 <?php
 namespace xxAROX\StimoCommunity;
-use pocketmine\event\player\PlayerJoinEvent;
+use pocketmine\event\block\BlockBreakEvent;
+use xxAROX\StimoCommunity\item\ActionItem;
 
 
 /**
@@ -11,7 +12,21 @@ use pocketmine\event\player\PlayerJoinEvent;
  * @project StimoCommunity
  */
 class Listener implements \pocketmine\event\Listener{
-	public function onJoin(PlayerJoinEvent $event): void{
+	/**
+	 * Function onBreak
+	 * @param BlockBreakEvent $event
+	 * @return void
+	 * @priority HIGHEST
+	 */
+	public function onBreak(BlockBreakEvent $event): void{
 		$player = $event->getPlayer();
+		$item = $event->getItem();
+		$nbt = $item->getNamedTag();
+
+		if ($item instanceof ActionItem) {
+			/** @var ActionItem $item */
+			$item->onBreak($player, $event->getBlock());
+			$event->setCancelled(true);
+		}
 	}
 }
