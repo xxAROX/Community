@@ -1,0 +1,12 @@
+name: "StimoCommunity"
+author: "xxAROX"
+website: "https://github.com/xxAROX/"
+version: "1.0"
+description: "Community plugin for StimoMC maybe"
+
+api: [ "3.0.0" ]
+main: xxAROX\StimoCommunity\StimoCommunity
+
+permissions:
+  "xxarox.command.community.setup":
+    description: "xxarox.command.community.setup"
