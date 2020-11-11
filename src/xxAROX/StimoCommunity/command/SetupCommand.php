@@ -2,12 +2,9 @@
 namespace xxAROX\StimoCommunity\command;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\item\enchantment\Enchantment;
-use pocketmine\item\enchantment\EnchantmentInstance;
-use pocketmine\item\Item;
 use pocketmine\Player;
 use xxAROX\StimoCommunity\item\ActionItem;
-use xxAROX\StimoCommunity\item\NBT;
+use xxAROX\StimoCommunity\screenbox\Setup;
 use xxAROX\StimoCommunity\StimoCommunity;
 
 
@@ -42,16 +39,30 @@ class SetupCommand extends Command{
 		if (!$sender instanceof Player) {
 			return;
 		}
-		$sender->getInventory()->clearAll();
-		$items = [
-			new ActionItem(ActionItem::TAG_SET_POSITION),
-			new ActionItem(ActionItem::TAG_SET_FIREWORK),
-			new ActionItem(ActionItem::TAG_SET_VULKAN),
-		];
-		$i = 0;
-		foreach ($items as $item) {
-			$sender->getInventory()->setItem($i, $item);
-			$i++;
+		if (!isset($args[0])) {
+			$sender->sendMessage(StimoCommunity::PREFIX . "/{$this->getName()} <stage|screenbox>");
+			return;
+		}
+		if (strtoupper($args[0]) == "stage") {
+			$sender->getInventory()->clearAll();
+			$items = [
+				new ActionItem(ActionItem::TAG_SET_POSITION),
+				new ActionItem(ActionItem::TAG_SET_FIREWORK),
+				new ActionItem(ActionItem::TAG_SET_VULKAN),
+				new ActionItem(ActionItem::TAG_SET_MUSIC_DESK),
+				new ActionItem(ActionItem::TAG_SET_SETTINGS),
+				new ActionItem(ActionItem::TAG_SET_MUSIC_BOX),
+			];
+			$i = 0;
+			foreach ($items as $item) {
+				$sender->getInventory()->setItem($i, $item);
+				$i++;
+			}
+			return;
+		}
+		if (strtolower($args[0]) == "box" || strtolower($args[0]) == "screenbox") {
+			Setup::addPlayer($sender);
+			return;
 		}
 	}
 }

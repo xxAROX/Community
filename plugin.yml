@@ -10,3 +10,7 @@ main: xxAROX\StimoCommunity\StimoCommunity
 permissions:
   "xxarox.command.community.setup":
     description: "xxarox.command.community.setup"
+  "xxarox.community.use":
+    description: "xxarox.community.use"
+  "xxarox.community.screenbox":
+    description: "xxarox.community.screenbox"

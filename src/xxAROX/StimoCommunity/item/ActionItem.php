@@ -1,7 +1,6 @@
 <?php
 namespace xxAROX\StimoCommunity\item;
 use pocketmine\block\Block;
-use pocketmine\item\Item;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\utils\Utils;
@@ -48,6 +47,9 @@ class ActionItem extends NBT{
 			case self::TAG_SET_FIREWORK:
 				$this->setCustomName("§r§dFireworks");
 				$callable = function (Player $player, Block $clicked, bool $place): void{
+					if ($place) {
+						return;
+					}
 					$stage = StimoCommunity::getStage();
 
 					if ($stage->isFireworkPosition($clicked->asVector3())) {
@@ -62,6 +64,9 @@ class ActionItem extends NBT{
 			case self::TAG_SET_VULKAN:
 				$this->setCustomName("§r§dVulkan");
 				$callable = function (Player $player, Block $clicked, bool $place): void{
+					if ($place) {
+						return;
+					}
 					$stage = StimoCommunity::getStage();
 
 					if ($stage->isVulkanPosition($clicked->asVector3())) {
@@ -70,6 +75,57 @@ class ActionItem extends NBT{
 					} else {
 						$stage->addVulkanPosition($clicked->asVector3());
 						$player->sendMessage(StimoCommunity::PREFIX . "Vulkan position was created.");
+					}
+				};
+				break;
+			case self::TAG_SET_MUSIC_DESK:
+				$this->setCustomName("§r§dMusic desk");
+				$callable = function (Player $player, Block $clicked, bool $place): void{
+					if ($place) {
+						return;
+					}
+					$stage = StimoCommunity::getStage();
+
+					if ($stage->isMusicDeskPosition($clicked->asVector3())) {
+						$stage->removeMusicDeskPosition($clicked->asVector3());
+						$player->sendMessage(StimoCommunity::PREFIX . "Music desk position was removed.");
+					} else {
+						$stage->addMusicDeskPosition($clicked->asVector3());
+						$player->sendMessage(StimoCommunity::PREFIX . "Music desk position was created.");
+					}
+				};
+				break;
+			case self::TAG_SET_SETTINGS:
+				$this->setCustomName("§r§dStage Settings");
+				$callable = function (Player $player, Block $clicked, bool $place): void{
+					if ($place) {
+						return;
+					}
+					$stage = StimoCommunity::getStage();
+
+					if ($stage->isSettingsPosition($clicked->asVector3())) {
+						$stage->removeSettingsPosition($clicked->asVector3());
+						$player->sendMessage(StimoCommunity::PREFIX . "Stage settings position was removed.");
+					} else {
+						$stage->addSettingsPosition($clicked->asVector3());
+						$player->sendMessage(StimoCommunity::PREFIX . "Stage settings position was created.");
+					}
+				};
+				break;
+			case self::TAG_SET_MUSIC_BOX:
+				$this->setCustomName("§r§dMusic box");
+				$callable = function (Player $player, Block $clicked, bool $place): void{
+					if ($place) {
+						return;
+					}
+					$stage = StimoCommunity::getStage();
+
+					if ($stage->isMusicBoxPosition($clicked->asVector3())) {
+						$stage->removeMusicBoxPosition($clicked->asVector3());
+						$player->sendMessage(StimoCommunity::PREFIX . "Music box position was removed.");
+					} else {
+						$stage->addMusicBoxPosition($clicked->asVector3());
+						$player->sendMessage(StimoCommunity::PREFIX . "Music box position was created.");
 					}
 				};
 				break;

@@ -1,11 +1,12 @@
 <?php
 namespace xxAROX\StimoCommunity\stage;
 use pocketmine\level\Level;
-use pocketmine\level\particle\FlameParticle;
+use pocketmine\level\particle\GenericParticle;
 use pocketmine\level\particle\LavaParticle;
 use pocketmine\level\Position;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
+use pocketmine\network\mcpe\protocol\BlockEventPacket;
 use pocketmine\Player;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
@@ -22,6 +23,8 @@ use xxAROX\StimoCommunity\StimoCommunity;
  * @project StimoCommunity
  */
 class Stage extends ConfigShit{
+	/** @var MusicPlayer */
+	private $musicPlayer;
 	/** @var Level */
 	private $level;
 	/** @var Vector3 */
@@ -33,21 +36,26 @@ class Stage extends ConfigShit{
 	public $fireworkDelay = 20;
 	/** @var int */
 	public $fireworkSettings = [
-		"type" => Firework::TYPE_SMALL_SPHERE,
-		"color" => "random",
+		"type"    => Firework::TYPE_BURST,
+		"color"   => "random",
+		"fade"    => false,
+		"flicker" => false,
 	];
 	/** @var bool */
-	protected $fireworksEnabled = true;
+	public $fireworksEnabled = false;
 	/** @var bool */
-	protected $vulkanEnabled = true;
+	public $vulkanEnabled = false;
 
 
 	/**
 	 * Stage constructor.
 	 * @param string $path
+	 * @param string $musicPath
 	 */
-	public function __construct(string $path){
+	public function __construct(string $path, string $musicPath){
 		parent::__construct($path);
+		$this->musicPlayer = new MusicPlayer($musicPath);
+
 		if (
 			is_null($this->file->get("levelName", null))
 			OR is_null($this->file->get("pos1", null))
@@ -63,6 +71,14 @@ class Stage extends ConfigShit{
 		$this->pos2 = new Vector3((int)$pos2[0],(int)$pos2[1],(int)$pos2[2]);
 
 		$this->load();
+	}
+
+	/**
+	 * Function getMusicPlayer
+	 * @return MusicPlayer
+	 */
+	public function getMusicPlayer(): MusicPlayer{
+		return $this->musicPlayer;
 	}
 
 	/**
@@ -121,18 +137,15 @@ class Stage extends ConfigShit{
 	 * @return void
 	 */
 	protected function load(): void{
-		$this->fireworkPositions = [];
-		foreach ($this->file->get("firework-positions", []) as $strPos) {
-			$pos = explode(":", $strPos);
-			$this->fireworkPositions[$strPos] = new Vector3((int)$pos[0],(int)$pos[1],(int)$pos[2]);
-		}
-		foreach ($this->file->get("vulkan-positions", []) as $strPos) {
-			$pos = explode(":", $strPos);
-			$this->vulkanPositions[$strPos] = new Vector3((int)$pos[0],(int)$pos[1],(int)$pos[2]);
-		}
-
+		parent::load();
 		$this->loadEntities();
-		StimoCommunity::getInstance()->getScheduler()->scheduleRepeatingTask(new ClosureTask(function (int $currentTick): void{$this->tick();}), 1);
+		StimoCommunity::getInstance()->getScheduler()->scheduleRepeatingTask(new ClosureTask(
+			function (int $currentTick): void{
+				$this->tick();
+				foreach (StimoCommunity::getScreenBoxes() as $strPos => $screenBox) {
+					$screenBox->tick();
+				}
+			}), 1);
 	}
 
 	/**
@@ -154,6 +167,9 @@ class Stage extends ConfigShit{
 		if ($this->vulkanEnabled) {
 			$this->spawnVolcanoes();
 		}
+		if ($this->musicPlayer->isPlaying() && Server::getInstance()->getTick() %4 == 0) {
+			$this->activateMusicBoxes();
+		}
 	}
 
 	/**
@@ -165,7 +181,7 @@ class Stage extends ConfigShit{
 	public function spawnFireworks(int $type = Firework::TYPE_SMALL_SPHERE, string $color = "random"): void{
 		$colors = ["\x00","\x01","\x02","\x03","\x04","\x05","\x06","\x07","\x08","\x09","\x0a","\x0b","\x0c","\x0d","\x0e","\x0f"];
 		foreach ($this->fireworkPositions as $fireworkPosition) {
-			FireworksRocket::spawn(new Position($fireworkPosition->x +0.5, $fireworkPosition->y, $fireworkPosition->z +0.5, $this->level), $type, ($color === "random" ? ($colors[mt_rand(0,count($colors) -1)]) : $color), false, false);
+			FireworksRocket::spawn(new Position($fireworkPosition->x +0.5, $fireworkPosition->y, $fireworkPosition->z +0.5, $this->level), $type, ($color === "random" ? ($colors[mt_rand(0,count($colors) -1)]) : $color), $this->fireworkSettings["fade"], $this->fireworkSettings["flicker"]);
 		}
 	}
 
@@ -180,6 +196,20 @@ class Stage extends ConfigShit{
 			$this->level->addParticle(new LavaParticle(new Vector3($vulkanPosition->x +0.5 +($radius *cos(deg2rad(90))), $vulkanPosition->y +1.2, $vulkanPosition->z +0.5 +($radius *sin(deg2rad(90))))));
 			$this->level->addParticle(new LavaParticle(new Vector3($vulkanPosition->x +0.5 +($radius *cos(deg2rad(180))), $vulkanPosition->y +1.2, $vulkanPosition->z +0.5 +($radius *sin(deg2rad(180))))));
 			$this->level->addParticle(new LavaParticle(new Vector3($vulkanPosition->x +0.5 +($radius *cos(deg2rad(270))), $vulkanPosition->y +1.2, $vulkanPosition->z +0.5 +($radius *sin(deg2rad(270))))));
+		}
+	}
+
+	/**
+	 * Function spawnVolcanoes
+	 * @return void
+	 */
+	public function activateMusicBoxes(): void{
+		foreach ($this->musicBoxPositions as $vulkanPosition) {$pk = new BlockEventPacket();
+			$radius = 0.5;
+			$this->level->addParticle(new GenericParticle(new Vector3($vulkanPosition->x +0.5 +($radius *cos(deg2rad(0))), $vulkanPosition->y +0.5, $vulkanPosition->z +0.5 +($radius *sin(deg2rad(0)))), GenericParticle::TYPE_NOTE, mt_rand(0,15)));
+			$this->level->addParticle(new GenericParticle(new Vector3($vulkanPosition->x +0.5 +($radius *cos(deg2rad(90))), $vulkanPosition->y +0.5, $vulkanPosition->z +0.5 +($radius *sin(deg2rad(90)))), GenericParticle::TYPE_NOTE, mt_rand(0,15)));
+			$this->level->addParticle(new GenericParticle(new Vector3($vulkanPosition->x +0.5 +($radius *cos(deg2rad(180))), $vulkanPosition->y +0.5, $vulkanPosition->z +0.5 +($radius *sin(deg2rad(180)))), GenericParticle::TYPE_NOTE, mt_rand(0,15)));
+			$this->level->addParticle(new GenericParticle(new Vector3($vulkanPosition->x +0.5 +($radius *cos(deg2rad(270))), $vulkanPosition->y +0.5, $vulkanPosition->z +0.5 +($radius *sin(deg2rad(270)))), GenericParticle::TYPE_NOTE, mt_rand(0,15)));
 		}
 	}
 }
