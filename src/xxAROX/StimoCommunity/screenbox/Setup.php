@@ -80,7 +80,7 @@ class Setup implements Listener{
 		}
 		if (self::$stage == self::STAGE_SPAWN) {
 			self::$player = null;
-			$screenBoxFile = new Config((Utils::getOS() == Utils::OS_LINUX ? "/home/.data/screenboxes.json" : StimoCommunity::getInstance()->getDataFolder() . "screenboxes.json"));
+			$screenBoxFile = new Config((Utils::getOS() == Utils::OS_LINUX ? "/home/.data/screenboxes.json" : StimoCommunity::getInstance()->getDataFolder() . "screenboxes.json"), Config::JSON, ["screenshotTime" => 30,"boxes" => []]);
 			$data = $screenBoxFile->getAll();
 			$data[] = self::$config;
 			$screenBoxFile->setAll($data);

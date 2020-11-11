@@ -66,7 +66,7 @@ class StimoCommunity extends PluginBase{
 		$stageFile = (Utils::getOS() == Utils::OS_LINUX ? "/home/.data/stage.json" : $this->getDataFolder() . "stage.json");
 		self::$stage = new Stage($stageFile, $this->getDataFolder() . "songs/");
 
-		$screenBoxFile = new Config((Utils::getOS() == Utils::OS_LINUX ? "/home/.data/screenboxes.json" : $this->getDataFolder() . "screenboxes.json"));
+		$screenBoxFile = new Config((Utils::getOS() == Utils::OS_LINUX ? "/home/.data/screenboxes.json" : $this->getDataFolder() . "screenboxes.json"), Config::JSON, ["screenshotTime" => 30,"boxes" => []]);
 		$data = $screenBoxFile->getAll();
 
 		foreach ($data["boxes"] as $key => $value) {
